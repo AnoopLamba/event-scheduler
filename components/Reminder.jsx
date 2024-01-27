@@ -3,9 +3,9 @@ import { DotsVerticalIcon } from "./common/Icon";
 import { format } from "date-fns";
 import { Fragment } from "react";
 
-function classNames(...classes) {
+const classNames = (...classes) => {
   return classes.filter(Boolean).join(" ");
-}
+};
 
 // Reminder Component to show in reminders list
 function Reminder({ reminder }) {
@@ -13,12 +13,12 @@ function Reminder({ reminder }) {
     <li className="flex items-start group focus-within:bg-gray-100 hover:bg-gray-100">
       <div className="flex-auto">
         <time
-          dateTime={format(reminder.date, "yyyy-MM-dd")}
+          dateTime={reminder.nextRevisionTime}
           className="p-[6px_17px] rounded-[20px] bg-[#40DFCD] text-white text-sm font-medium"
         >
-          {format(reminder.date, "MMM dd, yyy")}
+          {format(reminder.nextRevisionTime, "MMM dd, yyyy HH:mm a")}
         </time>
-        <p className="mt-[7px] text-gray-900">{reminder.event}</p>
+        <p className="mt-[7px] text-gray-900">{reminder.title}</p>
       </div>
       <Menu
         as="div"

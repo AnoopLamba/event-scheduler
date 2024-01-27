@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 import AddEventModal from "./AddEventModal";
 import { CalenderLeftIcon, CalenderRightIcon } from "./common/Icon";
 import Reminder from "./Reminder";
+import { toast } from "react-toastify";
+import revisionService from "@/services/revisionService";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -30,12 +32,23 @@ export default function Calender() {
   let [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
   let firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
 
+  // to populate the revisions
   useEffect(() => {
-    const localReminders = localStorage.getItem("reminders");
+    const fetchData = async () => {
+      try {
+        const { revisions } = await revisionService.getRevisions();
 
-    if (localReminders) {
-      setReminders(JSON.parse(localReminders));
-    }
+        if (revisions) {
+          setReminders(revisions);
+        }
+      } catch (error) {
+        console.log("error getting revisions: ", error);
+        toast.dismiss();
+        return toast.error("Error getting revisions!");
+      }
+    };
+
+    fetchData();
   }, []);
 
   let days = eachDayOfInterval({
@@ -55,7 +68,7 @@ export default function Calender() {
 
   // This will return array of reminders for the selected month
   let selectedMonthReminders = reminders.filter((reminder) =>
-    isSameMonth(reminder.date, currentMonth)
+    isSameMonth(reminder.nextRevisionTime, currentMonth)
   );
 
   console.log("selectedMonthReminders are this:", selectedMonthReminders);
@@ -158,7 +171,7 @@ export default function Calender() {
 
                     <div className="w-1 h-1 mx-auto mt-1">
                       {reminders.some((reminder) =>
-                        isSameDay(reminder.date, day)
+                        isSameDay(reminder.nextRevisionTime, day)
                       ) && (
                         <div className="w-1 h-1 rounded-full bg-sky-500"></div>
                       )}
@@ -174,7 +187,7 @@ export default function Calender() {
               <ol className="mt-[22px] divide-y-[1px] divide-[#C4C4C4]">
                 {selectedMonthReminders.length > 0 ? (
                   selectedMonthReminders.map((reminder) => (
-                    <Reminder reminder={reminder} key={reminder.id} />
+                    <Reminder reminder={reminder} key={reminder._id} />
                   ))
                 ) : (
                   <p className="text-sm leading-6 text-gray-500">

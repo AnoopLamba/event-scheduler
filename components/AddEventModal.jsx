@@ -1,6 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { toast } from "react-toastify";
+import revisionService from "@/services/revisionService";
 
 export default function AddEventModal(props) {
   const {
@@ -8,32 +9,79 @@ export default function AddEventModal(props) {
     setIsOpen,
     inputEvent,
     setInputEvent,
-    selectedDate,
     reminders,
     setReminders,
   } = props;
 
-  function closeModal() {
+  const closeModal = () => {
     setIsOpen(false);
     setInputEvent("");
-  }
+  };
+
+  // will give next revision time depending on number of revisions completed
+  const nextRevisionTime = (numberOfRevisionsCompleted) => {
+    const currentTime = new Date();
+
+    switch (numberOfRevisionsCompleted) {
+      // adding 6 hours
+      case 0:
+        currentTime.setHours(currentTime.getHours() + 6);
+        return currentTime;
+
+      // adding 1 day between 1st and 2nd revision
+      case 1:
+        currentTime.setDate(currentTime.getDate() + 1);
+        return currentTime;
+
+      // adding 2 days between 2nd and 3rd revision
+      case 2:
+        currentTime.setDate(currentTime.getDate() + 2);
+        return currentTime;
+
+      // adding 5 days between 3rd and 4th revision
+      case 3:
+        currentTime.setDate(currentTime.getDate() + 5);
+        return currentTime;
+
+      // adding 7 days between 4th and 5th revision
+      case 4:
+        currentTime.setDate(currentTime.getDate() + 7);
+        return currentTime;
+
+      default:
+        return;
+    }
+  };
 
   // function to add events
-  const handleAdd = () => {
-    setIsOpen(false);
-    const newEvent = {
-      id: uuidv4(),
-      event: inputEvent,
-      date: selectedDate,
-    };
+  const handleAdd = async () => {
+    try {
+      const newRevision = {
+        title: inputEvent,
+        isCompleted: false,
+        nextRevisionTime: nextRevisionTime(0),
+        numberOfRevisionsCompleted: 0,
+      };
+      const { revision } = await revisionService.addRevision(newRevision);
+      const newRevisions = [...reminders, revision];
 
-    const newReminders = [...reminders, newEvent];
-    const orderedReminders = newReminders
-      .slice()
-      .sort((a, b) => a.date - b.date);
-    setReminders(orderedReminders);
-    localStorage.setItem("reminders", JSON.stringify(orderedReminders));
-    setInputEvent("");
+      // Sorting the data based on nextRevisionTime in ascending order
+      const sortedRevisions = newRevisions
+        .slice()
+        .sort(
+          (a, b) => new Date(a.nextRevisionTime) - new Date(b.nextRevisionTime)
+        );
+
+      setReminders(sortedRevisions);
+      setIsOpen(false);
+      setInputEvent("");
+      toast.dismiss();
+      toast.success("Added successfully!");
+    } catch (error) {
+      console.log("Error adding!", error);
+      toast.dismiss();
+      return toast.error("Error adding!");
+    }
   };
 
   return (
