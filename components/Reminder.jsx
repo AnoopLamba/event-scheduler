@@ -7,7 +7,7 @@ function Reminder(props) {
   const { reminder, handleDelete, handleEdit, handleMarkAsDone } = props;
 
   return (
-    <li className="py-4 px-3 flex items-start justify-between gap-4 group focus-within:bg-green-50 focus-within:rounded-lg">
+    <li className="py-4 flex items-start justify-between gap-4 group">
       <div className="w-full flex flex-col items-start justify-center gap-2">
         {/* number of revisions completed and the time */}
         <div className="flex items-center justify-start gap-2">

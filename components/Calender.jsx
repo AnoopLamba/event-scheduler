@@ -40,8 +40,12 @@ export default function Calender() {
       try {
         const { revisions } = await revisionService.getRevisions();
 
+        // this will only show the not completed revisions
         if (revisions) {
-          setReminders(revisions);
+          const updatedRevisions = revisions.filter(
+            (revision) => revision.isCompleted == false
+          );
+          setReminders(updatedRevisions);
         }
       } catch (error) {
         console.log("error getting revisions: ", error);
@@ -87,28 +91,50 @@ export default function Calender() {
         currentTime.setHours(currentTime.getHours() + 6);
         return currentTime;
 
-      // adding 1 day between 1st and 2nd revision
+      // adding 1 day
       case 1:
         currentTime.setDate(currentTime.getDate() + 1);
         return currentTime;
 
-      // adding 2 days between 2nd and 3rd revision
+      // adding 2 days
       case 2:
         currentTime.setDate(currentTime.getDate() + 2);
         return currentTime;
 
-      // adding 5 days between 3rd and 4th revision
+      // adding 5 days
       case 3:
         currentTime.setDate(currentTime.getDate() + 5);
         return currentTime;
 
-      // adding 7 days between 4th and 5th revision
+      // adding 7 days
       case 4:
         currentTime.setDate(currentTime.getDate() + 7);
         return currentTime;
 
+      // adding 10 days
+      case 5:
+        currentTime.setDate(currentTime.getDate() + 10);
+        return currentTime;
+
+      // adding 17 days
+      case 6:
+        currentTime.setDate(currentTime.getDate() + 17);
+        return currentTime;
+
+      // adding 27 days
+      case 7:
+        currentTime.setDate(currentTime.getDate() + 27);
+        return currentTime;
+
+      // adding 42 days
+      case 8:
+        currentTime.setDate(currentTime.getDate() + 42);
+        return currentTime;
+
+      // adding 62 days
       default:
-        return;
+        currentTime.setDate(currentTime.getDate() + 62);
+        return currentTime;
     }
   };
 
@@ -152,17 +178,21 @@ export default function Calender() {
   // function to handle next revision time
   const handleMarkAsDone = async (id) => {
     try {
-      const oldRevision = getRevisionWithId(id);
+      const oldRevision = await getRevisionWithId(id);
       if (oldRevision) {
+        let newNumberOfRevisionsDone =
+          oldRevision.numberOfRevisionsCompleted + 1;
+
         const newRevision = {
-          nextRevisionTime: nextRevisionTime(
-            oldRevision.numberOfRevisionsCompleted + 1
-          ),
-          numberOfRevisionsCompleted:
-            oldRevision.numberOfRevisionsCompleted + 1,
+          nextRevisionTime: nextRevisionTime(newNumberOfRevisionsDone),
+          numberOfRevisionsCompleted: newNumberOfRevisionsDone,
+          ...(newNumberOfRevisionsDone >= 10 && { isCompleted: true }),
         };
 
-        const revision = await revisionService.updateRevision(id, newRevision);
+        const { revision } = await revisionService.updateRevision(
+          id,
+          newRevision
+        );
 
         const newRevisions = reminders.map((reminder) =>
           reminder._id == id ? revision : reminder
@@ -170,7 +200,7 @@ export default function Calender() {
 
         setReminders(newRevisions);
         toast.dismiss();
-        toast.success("Markded as done!");
+        toast.success("Marked as done!");
       }
     } catch (error) {
       console.log("Error marking as done!", error);
