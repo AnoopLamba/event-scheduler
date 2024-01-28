@@ -205,7 +205,7 @@ export default function Calender() {
         <div className="max-w-md px-4 mx-auto sm:px-7 md:max-w-4xl md:px-6">
           <div className="md:grid md:grid-cols-2 md:divide-x md:divide-gray-200">
             {/* Calender */}
-            <div className="md:pr-14">
+            <div className="md:pr-12">
               <div className="flex items-center">
                 <h2 className="flex-auto text-lg text-[#14238A] font-bold">
                   {format(firstDayCurrentMonth, "MMMM yyyy")}
@@ -291,7 +291,7 @@ export default function Calender() {
             </div>
 
             {/* Remainders for selected month */}
-            <section className="mt-12 md:mt-0 md:pl-14">
+            <section className="mt-12 md:mt-0 md:pl-8 pr-3 max-h-[492px] h-full overflow-auto reminder-section">
               <div className="w-full flex items-center justify-between">
                 <h2 className="font-medium text-xl text-black">Revisions</h2>
                 <button

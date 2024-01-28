@@ -3,3 +3,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* styling scrollbar start */
+.reminder-section::-webkit-scrollbar {
+  width: 4px;
+}
+.reminder-section::-webkit-scrollbar-track {
+  background: #fff2d8;
+}
+.reminder-section::-webkit-scrollbar-thumb {
+  background-color: #ffa002;
+  border-radius: 4px;
+}
+/* styling scrollbar end*/
