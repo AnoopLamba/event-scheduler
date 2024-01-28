@@ -137,7 +137,7 @@ export default function Calender() {
   };
 
   // get revision with id
-  const getRevisionWithId = async () => {
+  const getRevisionWithId = async (id) => {
     try {
       const { revision } = await revisionService.getOneRevision(id);
 
@@ -161,6 +161,16 @@ export default function Calender() {
           numberOfRevisionsCompleted:
             oldRevision.numberOfRevisionsCompleted + 1,
         };
+
+        const revision = await revisionService.updateRevision(id, newRevision);
+
+        const newRevisions = reminders.map((reminder) =>
+          reminder._id == id ? revision : reminder
+        );
+
+        setReminders(newRevisions);
+        toast.dismiss();
+        toast.success("Markded as done!");
       }
     } catch (error) {
       console.log("Error marking as done!", error);
