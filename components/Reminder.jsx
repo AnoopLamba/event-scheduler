@@ -3,14 +3,11 @@ import { DotsVerticalIcon } from "./common/Icon";
 import { format } from "date-fns";
 import { Fragment } from "react";
 
-const classNames = (...classes) => {
-  return classes.filter(Boolean).join(" ");
-};
+function Reminder(props) {
+  const { reminder, handleDelete, handleEdit, handleMarkAsDone } = props;
 
-// Reminder Component to show in reminders list
-function Reminder({ reminder }) {
   return (
-    <li className="flex items-start group focus-within:bg-gray-100 hover:bg-gray-100">
+    <li className="py-4 flex items-start group focus-within:bg-gray-100">
       <div className="flex-auto">
         <time
           dateTime={reminder.nextRevisionTime}
@@ -18,7 +15,7 @@ function Reminder({ reminder }) {
         >
           {format(reminder.nextRevisionTime, "MMM dd, yyyy HH:mm a")}
         </time>
-        <p className="mt-[7px] text-gray-900">{reminder.title}</p>
+        <p className="mt-2 text-gray-900">{reminder.title}</p>
       </div>
       <Menu
         as="div"
@@ -40,35 +37,43 @@ function Reminder({ reminder }) {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 z-10 mt-2 origin-top-right bg-white rounded-md shadow-lg w-36 ring-1 ring-black ring-opacity-5 focus:outline-none">
-            <div className="py-1">
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#"
-                    className={classNames(
-                      active ? "bg-gray-200 text-gray-900" : "text-gray-700",
-                      "block px-4 py-2 text-sm"
-                    )}
-                  >
-                    Edit
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#"
-                    className={classNames(
-                      active ? "bg-gray-200 text-gray-900" : "text-gray-700",
-                      "block px-4 py-2 text-sm"
-                    )}
-                  >
-                    Delete
-                  </a>
-                )}
-              </Menu.Item>
-            </div>
+          <Menu.Items className="absolute right-0 z-10 mt-2 origin-top-right bg-white rounded-md shadow-lg w-36 ring-1 ring-black ring-opacity-5 focus:outline-none divide-y">
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={() => handleEdit(reminder.title, reminder._id)}
+                  className={`w-full flex justify-start ${
+                    active ? "bg-gray-200 text-gray-900" : "text-gray-700"
+                  } px-4 py-3 text-sm`}
+                >
+                  Edit
+                </button>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={() => handleDelete(reminder._id)}
+                  className={`w-full flex justify-start ${
+                    active ? "bg-gray-200 text-gray-900" : "text-gray-700"
+                  } px-4 py-3 text-sm`}
+                >
+                  Delete
+                </button>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={() => handleMarkAsDone(reminder._id)}
+                  className={`w-full flex justify-start ${
+                    active ? "bg-gray-200 text-gray-900" : "text-gray-700"
+                  } px-4 py-3 text-sm`}
+                >
+                  Mark as done
+                </button>
+              )}
+            </Menu.Item>
           </Menu.Items>
         </Transition>
       </Menu>

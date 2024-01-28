@@ -14,5 +14,29 @@ async function getRevisions() {
   return response.data;
 }
 
-const revisionService = { addRevision, getRevisions };
+// function to get one revision
+async function getOneRevision(id) {
+  const response = await axios.get(`${URL}/all/${id}`);
+  return response.data;
+}
+
+// function to update revision
+async function updateRevision(id, data) {
+  const response = await axios.put(`${URL}/update/${id}`, data);
+  return response.data;
+}
+
+// function to delete revision
+async function deleteRevision(id) {
+  const response = await axios.delete(`${URL}/delete/${id}`);
+  return response.data;
+}
+
+const revisionService = {
+  addRevision,
+  getRevisions,
+  getOneRevision,
+  updateRevision,
+  deleteRevision,
+};
 export default revisionService;

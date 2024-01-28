@@ -17,6 +17,7 @@ import { CalenderLeftIcon, CalenderRightIcon } from "./common/Icon";
 import Reminder from "./Reminder";
 import { toast } from "react-toastify";
 import revisionService from "@/services/revisionService";
+import UpdateEventModal from "./UpdateEventModal";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -27,10 +28,11 @@ export default function Calender() {
   let [isOpen, setIsOpen] = useState(false);
   let [inputEvent, setInputEvent] = useState("");
   let [reminders, setReminders] = useState([]);
-  let [selectedDate, setSelectedDate] = useState("");
   let [selectedDay, setSelectedDay] = useState(today);
   let [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));
   let firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
+  let [editingId, setEditingId] = useState("");
+  let [editingReminder, setEditingReminder] = useState("");
 
   // to populate the revisions
   useEffect(() => {
@@ -71,12 +73,100 @@ export default function Calender() {
     isSameMonth(reminder.nextRevisionTime, currentMonth)
   );
 
-  console.log("selectedMonthReminders are this:", selectedMonthReminders);
-
   const handleDayClick = (day) => {
     setSelectedDay(day);
-    setIsOpen(true);
-    setSelectedDate(day);
+  };
+
+  // this function will give next revision time depending on number of revisions completed
+  const nextRevisionTime = (numberOfRevisionsCompleted) => {
+    const currentTime = new Date();
+
+    switch (numberOfRevisionsCompleted) {
+      // adding 6 hours
+      case 0:
+        currentTime.setHours(currentTime.getHours() + 6);
+        return currentTime;
+
+      // adding 1 day between 1st and 2nd revision
+      case 1:
+        currentTime.setDate(currentTime.getDate() + 1);
+        return currentTime;
+
+      // adding 2 days between 2nd and 3rd revision
+      case 2:
+        currentTime.setDate(currentTime.getDate() + 2);
+        return currentTime;
+
+      // adding 5 days between 3rd and 4th revision
+      case 3:
+        currentTime.setDate(currentTime.getDate() + 5);
+        return currentTime;
+
+      // adding 7 days between 4th and 5th revision
+      case 4:
+        currentTime.setDate(currentTime.getDate() + 7);
+        return currentTime;
+
+      default:
+        return;
+    }
+  };
+
+  // function to handle editing of the revision
+  const handleEdit = (title, id) => {
+    setEditingReminder(title);
+    setEditingId(id);
+  };
+
+  // function to delete the selected revision
+  const handleDelete = async (id) => {
+    try {
+      if (window.confirm("Do you want to delete it?")) {
+        await revisionService.deleteRevision(id);
+
+        const newRevisions = reminders.filter((revision) => revision._id != id);
+        setReminders(newRevisions);
+        toast.dismiss();
+        toast.info("Deleted successfully");
+      }
+    } catch (error) {
+      console.log("Error deleting!", error);
+      toast.dismiss();
+      return toast.error("Error deleting!");
+    }
+  };
+
+  // get revision with id
+  const getRevisionWithId = async () => {
+    try {
+      const { revision } = await revisionService.getOneRevision(id);
+
+      return revision;
+    } catch (error) {
+      console.log("Error getting one revision!", error);
+      toast.dismiss();
+      return toast.error("Error getting one revision!");
+    }
+  };
+
+  // function to handle next revision time
+  const handleMarkAsDone = async (id) => {
+    try {
+      const oldRevision = getRevisionWithId(id);
+      if (oldRevision) {
+        const newRevision = {
+          nextRevisionTime: nextRevisionTime(
+            oldRevision.numberOfRevisionsCompleted + 1
+          ),
+          numberOfRevisionsCompleted:
+            oldRevision.numberOfRevisionsCompleted + 1,
+        };
+      }
+    } catch (error) {
+      console.log("Error marking as done!", error);
+      toast.dismiss();
+      return toast.error("Error marking as done!");
+    }
   };
 
   return (
@@ -87,7 +177,16 @@ export default function Calender() {
         setIsOpen={setIsOpen}
         inputEvent={inputEvent}
         setInputEvent={setInputEvent}
-        selectedDate={selectedDate}
+        reminders={reminders}
+        setReminders={setReminders}
+        nextRevisionTime={nextRevisionTime}
+      />
+
+      <UpdateEventModal
+        editingId={editingId}
+        setEditingId={setEditingId}
+        editingReminder={editingReminder}
+        setEditingReminder={setEditingReminder}
         reminders={reminders}
         setReminders={setReminders}
       />
@@ -160,7 +259,7 @@ export default function Calender() {
                           "bg-gray-900",
                         !isEqual(day, selectedDay) && "hover:bg-gray-200",
                         (isEqual(day, selectedDay) || isToday(day)) &&
-                          "font-semibold",
+                          "font-semibold text-base",
                         "mx-auto flex h-8 w-8 items-center justify-center rounded-full"
                       )}
                     >
@@ -183,11 +282,25 @@ export default function Calender() {
 
             {/* Remainders for selected month */}
             <section className="mt-12 md:mt-0 md:pl-14">
-              <h2 className="font-medium text-xl text-black">Revisions</h2>
-              <ol className="mt-[22px] divide-y-[1px] divide-[#C4C4C4]">
+              <div className="w-full flex items-center justify-between">
+                <h2 className="font-medium text-xl text-black">Revisions</h2>
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className="p-[6px_17px] rounded-[20px] bg-pink-500 text-white text-sm font-medium"
+                >
+                  Add
+                </button>
+              </div>
+              <ol className="mt-2 divide-y-2">
                 {selectedMonthReminders.length > 0 ? (
                   selectedMonthReminders.map((reminder) => (
-                    <Reminder reminder={reminder} key={reminder._id} />
+                    <Reminder
+                      reminder={reminder}
+                      handleDelete={handleDelete}
+                      handleEdit={handleEdit}
+                      handleMarkAsDone={handleMarkAsDone}
+                      key={reminder._id}
+                    />
                   ))
                 ) : (
                   <p className="text-sm leading-6 text-gray-500">

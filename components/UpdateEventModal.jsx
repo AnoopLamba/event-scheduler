@@ -1,58 +1,53 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "react-toastify";
 import revisionService from "@/services/revisionService";
 
-export default function AddEventModal(props) {
+export default function UpdateEventModal(props) {
   const {
-    isOpen,
-    setIsOpen,
-    inputEvent,
-    setInputEvent,
+    editingReminder,
+    setEditingReminder,
+    editingId,
+    setEditingId,
     reminders,
     setReminders,
-    nextRevisionTime,
   } = props;
 
   const closeModal = () => {
-    setIsOpen(false);
-    setInputEvent("");
+    setEditingId("");
+    setEditingReminder("");
   };
 
-  // function to add events
-  const handleAdd = async () => {
+  // function to update revision
+  const handleUpdate = async () => {
     try {
       const newRevision = {
-        title: inputEvent,
-        isCompleted: false,
-        nextRevisionTime: nextRevisionTime(0),
-        numberOfRevisionsCompleted: 0,
+        title: editingReminder,
       };
-      const { revision } = await revisionService.addRevision(newRevision);
-      const newRevisions = [...reminders, revision];
+      const { revision } = await revisionService.updateRevision(
+        editingId,
+        newRevision
+      );
 
-      // Sorting the data based on nextRevisionTime in ascending order
-      const sortedRevisions = newRevisions
-        .slice()
-        .sort(
-          (a, b) => new Date(a.nextRevisionTime) - new Date(b.nextRevisionTime)
-        );
+      const newRevisions = reminders.map((reminder) =>
+        reminder._id == editingId ? revision : reminder
+      );
 
-      setReminders(sortedRevisions);
-      setIsOpen(false);
-      setInputEvent("");
+      setReminders(newRevisions);
+      setEditingId("");
+      setEditingReminder("");
       toast.dismiss();
-      toast.success("Added successfully!");
+      toast.success("Updated successfully!");
     } catch (error) {
-      console.log("Error adding!", error);
+      console.log("Error editing!", error);
       toast.dismiss();
-      return toast.error("Error adding!");
+      return toast.error("Error editing!");
     }
   };
 
   return (
     <>
-      <Transition appear show={isOpen} as={Fragment}>
+      <Transition appear show={Boolean(editingId)} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
           <Transition.Child
             as={Fragment}
@@ -82,13 +77,13 @@ export default function AddEventModal(props) {
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
                   >
-                    Add Event
+                    Update Event
                   </Dialog.Title>
                   <div className="mt-2">
                     <textarea
-                      value={inputEvent}
-                      onChange={(e) => setInputEvent(e.target.value)}
-                      placeholder="Event"
+                      value={editingReminder}
+                      onChange={(e) => setEditingReminder(e.target.value)}
+                      placeholder="Update event"
                       className="w-full p-4 resize-none bg-gray-200 outline-none rounded-md"
                     />
                   </div>
@@ -97,9 +92,9 @@ export default function AddEventModal(props) {
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-pink-500 px-4 py-2 text-sm font-medium text-white hover:bg-pink-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-800 focus-visible:ring-offset-2"
-                      onClick={handleAdd}
+                      onClick={handleUpdate}
                     >
-                      Add
+                      Update
                     </button>
                     <button
                       type="button"

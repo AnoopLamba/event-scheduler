@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function Home() {
   return (
     <>
-      <ToastContainer />
+      <ToastContainer autoClose={2500} />
       <Calender />
     </>
   );
