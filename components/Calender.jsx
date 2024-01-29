@@ -321,7 +321,7 @@ export default function Calender() {
             </div>
 
             {/* Remainders for selected month */}
-            <section className="mt-12 md:mt-0 md:pl-8 pr-3 max-h-[492px] h-full overflow-auto reminder-section">
+            <section className="mt-12 md:mt-0 md:pl-8 pr-1 max-h-[492px] h-full overflow-auto reminder-section">
               <div className="w-full flex items-center justify-between">
                 <h2 className="font-medium text-xl text-black">Revisions</h2>
                 <button
