@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const URL = "http://localhost:4000/api/v1/revision";
+// const URL = "http://localhost:4000/api/v1/revision";
+const URL = "https://revisionscheduler.onrender.com/api/v1/revision";
 
 // function to add new revision
 async function addRevision(data) {
